@@ -1,16 +1,20 @@
-name: secret-bypass-cmd
+name: real-secret-bypass
 on: workflow_dispatch
 jobs:
   test:
     runs-on: [self-hosted, Windows, X64]
     steps:
-      - name: Mask Secret
-        shell: cmd
-        run: echo ::add-mask::SUPER_SECRET_PASSWORD_12345
-          
-      - name: Bypass Test - Character by Character
+      - name: Test with Real Secret
+        env:
+          REAL_SECRET: ${{ secrets.TEST_SECRET }}
         shell: cmd
         run: |
-          set SECRET=SUPER_SECRET_PASSWORD_12345
-          echo Character splitting:
-          for %%i in (S U P E R _ S E C R E T _ P A S S W O R D _ 1 2 3 4 5) do @echo %%i
+          echo ::add-mask::%REAL_SECRET%
+          echo.
+          echo Direct echo (should be masked):
+          echo %REAL_SECRET%
+          echo.
+          echo Substring test:
+          echo %REAL_SECRET:~0,1%
+          echo %REAL_SECRET:~1,1%
+          echo %REAL_SECRET:~2,1%
