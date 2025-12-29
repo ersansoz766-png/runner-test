@@ -1,13 +1,15 @@
-name: secret-leak-test
+name: token-permissions-test
 on: workflow_dispatch
 jobs:
   test:
     runs-on: [self-hosted, Windows, X64]
     steps:
-      - name: Secret Leak Attempt
-        env:
-          MY_SECRET: ${{ secrets.TEST_SECRET }}
+      - name: Test Token Permissions
         shell: cmd
         run: |
-          echo Test starting...
-          powershell -Command "$s = $env:MY_SECRET; $s.ToCharArray() | ForEach-Object { Write-Host $_ -NoNewline; Start-Sleep -Milliseconds 10 }"
+          echo Testing read access...
+          curl -H "Authorization: token %GITHUB_TOKEN%" https://api.github.com/user
+          
+          echo.
+          echo Testing write access (should fail)...
+          curl -X POST -H "Authorization: token %GITHUB_TOKEN%" https://api.github.com/repos/%GITHUB_REPOSITORY%/issues -d "{\"title\":\"test\"}"
