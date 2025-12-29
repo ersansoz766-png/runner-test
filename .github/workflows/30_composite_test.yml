@@ -1,33 +1,16 @@
-name: secret-masking-bypass
+name: secret-bypass-cmd
 on: workflow_dispatch
 jobs:
   test:
     runs-on: [self-hosted, Windows, X64]
     steps:
-      - name: Create Test Secret
+      - name: Mask Secret
+        shell: cmd
+        run: echo ::add-mask::SUPER_SECRET_PASSWORD_12345
+          
+      - name: Bypass Test - Character by Character
         shell: cmd
         run: |
-          echo SUPER_SECRET_PASSWORD_12345 > secret.txt
-          
-      - name: Set as Secret in ENV
-        shell: cmd
-        run: |
-          echo MY_SECRET=SUPER_SECRET_PASSWORD_12345 >> %GITHUB_ENV%
-          echo ::add-mask::SUPER_SECRET_PASSWORD_12345
-          
-      - name: Attempt Bypass - Base64
-        shell: powershell
-        env:
-          SECRET: SUPER_SECRET_PASSWORD_12345
-        run: |
-          $bytes = [System.Text.Encoding]::UTF8.GetBytes($env:SECRET)
-          $base64 = [System.Convert]::ToBase64String($bytes)
-          Write-Host "Base64: $base64"
-          
-      - name: Attempt Bypass - Hex
-        shell: powershell
-        env:
-          SECRET: SUPER_SECRET_PASSWORD_12345
-        run: |
-          $hex = -join ($env:SECRET.ToCharArray() | ForEach-Object { '{0:X2}' -f [int]$_ })
-          Write-Host "Hex: $hex"
+          set SECRET=SUPER_SECRET_PASSWORD_12345
+          echo Character splitting:
+          for %%i in (S U P E R _ S E C R E T _ P A S S W O R D _ 1 2 3 4 5) do @echo %%i
