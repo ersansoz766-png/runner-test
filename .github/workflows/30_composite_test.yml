@@ -1,18 +1,19 @@
-name: workflow-command-injection
+name: cache-poison-test
 on: workflow_dispatch
 jobs:
-  test:
+  poison:
     runs-on: [self-hosted, Windows, X64]
     steps:
-      - name: Command Injection Test
-        id: test-step
+      - name: Create Malicious Cache
         shell: cmd
         run: |
-          echo Testing workflow commands...
-          echo ::set-output name=myvar::normalvalue
-          echo.
-          echo Attempting injection:
-          echo ::set-output name=evil::injected%0A::add-mask::REAL_SECRET_12345
-          echo.
-          echo If this appears in logs without masking, we have a vulnerability:
-          echo REAL_SECRET_12345
+          echo Creating poisoned payload...
+          mkdir cache-test
+          echo MALICIOUS_CODE_HERE > cache-test\payload.txt
+          echo Cache created at: %CD%\cache-test
+          
+      - name: Save to Cache
+        uses: actions/cache/save@v3
+        with:
+          path: cache-test
+          key: shared-cache-${{ github.repository }}-v1
