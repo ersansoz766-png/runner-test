@@ -1,4 +1,4 @@
-name: token-check-fixed
+name: token-permission-exploit
 on: workflow_dispatch
 jobs:
   test:
@@ -7,20 +7,18 @@ jobs:
       contents: read
       issues: write
     steps:
-      - name: Check Token with Context
+      - name: Test Actual Permissions
         env:
           MY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: cmd
         run: |
-          echo Checking token from secrets context...
-          if defined MY_TOKEN (
-            echo Token EXISTS via secrets.GITHUB_TOKEN
-            echo First 10 chars:
-            echo %MY_TOKEN:~0,10%
-          ) else (
-            echo Token still NOT FOUND
-          )
+          echo === TEST 1: READ (should work) ===
+          curl -H "Authorization: Bearer %MY_TOKEN%" https://api.github.com/repos/%GITHUB_REPOSITORY%
           
           echo.
-          echo Testing API with token:
-          curl -H "Authorization: Bearer %MY_TOKEN%" https://api.github.com/user
+          echo === TEST 2: WRITE ISSUE (should work - we have permission) ===
+          curl -X POST -H "Authorization: Bearer %MY_TOKEN%" -H "Content-Type: application/json" -d "{\"title\":\"Test Issue\",\"body\":\"Created by workflow\"}" https://api.github.com/repos/%GITHUB_REPOSITORY%/issues
+          
+          echo.
+          echo === TEST 3: WRITE CODE (should FAIL - we only have read) ===
+          curl -X PUT -H "Authorization: Bearer %MY_TOKEN%" -H "Content-Type: application/json" -d "{\"message\":\"test\",\"content\":\"dGVzdA==\"}" https://api.github.com/repos/%GITHUB_REPOSITORY%/contents/HACKED.txt
