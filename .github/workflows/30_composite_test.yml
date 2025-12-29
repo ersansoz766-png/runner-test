@@ -1,18 +1,24 @@
-name: composite-test
-on:
-  workflow_dispatch:
-    inputs:
-      val:
-        required: true
-        default: SAFE
-
+name: security-audit
+on: workflow_dispatch
 jobs:
-  test:
+  audit:
     runs-on: [self-hosted, Windows, X64]
     steps:
-      - shell: powershell
+      - name: System Info
+        shell: powershell
         run: |
-          echo "INPUT=${{ github.event.inputs.val }}"
-      - shell: powershell
-        run: |
-          iex "echo ${{ github.event.inputs.val }}"
+          Write-Host "=== KULLANICI VE YETKİLER ==="
+          whoami
+          whoami /priv
+          whoami /groups
+          
+          Write-Host "`n=== ORTAM DEĞİŞKENLERİ ==="
+          Get-ChildItem env: | Format-Table -AutoSize
+          
+          Write-Host "`n=== RUNNER KONUMU ==="
+          Get-Location
+          echo "RUNNER_WORKSPACE: $env:RUNNER_WORKSPACE"
+          echo "GITHUB_WORKSPACE: $env:GITHUB_WORKSPACE"
+          
+          Write-Host "`n=== SİSTEM BİLGİSİ ==="
+          systeminfo | Select-String "OS Name","OS Version","System Type"
