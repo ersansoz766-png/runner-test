@@ -1,19 +1,32 @@
-name: cache-poison-test
-on: workflow_dispatch
-jobs:
-  poison:
-    runs-on: [self-hosted, Windows, X64]
-    steps:
-      - name: Create Malicious Cache
-        shell: cmd
-        run: |
-          echo Creating poisoned payload...
-          mkdir cache-test
-          echo MALICIOUS_CODE_HERE > cache-test\payload.txt
-          echo Cache created at: %CD%\cache-test
-          
-      - name: Save to Cache
-        uses: actions/cache/save@v3
-        with:
-          path: cache-test
-          key: shared-cache-${{ github.repository }}-v1
+succeeded now in 13s
+Search logs
+4s
+Current runner version: '2.330.0'
+Runner name: 'DESKTOP-I1CN4HU'
+Runner group name: 'Default'
+Machine name: 'DESKTOP-I1CN4HU'
+GITHUB_TOKEN Permissions
+  Contents: read
+  Metadata: read
+  Packages: read
+Secret source: Actions
+Prepare workflow directory
+Prepare all required actions
+Getting action download info
+Download action repository 'actions/cache@v3' (SHA:6f8efc29b200d32929f49075959781ed54ec270c)
+Complete job name: poison
+0s
+1s
+Run actions/cache/save@v3
+  with:
+    path: cache-test
+    key: shared-cache-berkdedekarginoglu/runner-test-v1
+    enableCrossOsArchive: false
+"C:\Program Files\Git\usr\bin\tar.exe" --posix -cf cache.tgz --exclude cache.tgz -P -C C:/gha-runner/_work/runner-test/runner-test --files-from manifest.txt --force-local -z
+/bin/sh: line 1: gzip: command not found
+/usr/bin/tar: Child returned status 127
+/usr/bin/tar: Error is not recoverable: exiting now
+Warning: Failed to save: "C:\Program failed with error: The process 'C:\Program Files\Git\usr\bin\tar.exe' failed with exit code 2
+Warning: Cache save failed.
+0s
+Cleaning up orphan processes
