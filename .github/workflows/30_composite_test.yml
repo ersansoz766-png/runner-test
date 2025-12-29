@@ -1,24 +1,21 @@
-name: job-output-injection-test
-on: workflow_dispatch
+name: external-data-injection
+on: 
+  issues:
+    types: [opened]
 jobs:
-  producer:
+  process:
     runs-on: [self-hosted, Windows, X64]
     outputs:
-      user_data: ${{ steps.generate.outputs.data }}
+      issue_title: ${{ github.event.issue.title }}
     steps:
-      - name: Generate Malicious Output
-        id: generate
-        shell: cmd
-        run: |
-          echo data=test^&^&echo INJECTED > %GITHUB_OUTPUT%
-          
-  consumer:
-    needs: producer
+      - run: echo Issue received
+      
+  execute:
+    needs: process
     runs-on: [self-hosted, Windows, X64]
     steps:
-      - name: Use Output in Command
+      - name: Process Issue
         shell: cmd
         run: |
-          echo Processing: ${{ needs.producer.outputs.user_data }}
-          set VAR=${{ needs.producer.outputs.user_data }}
-          echo Done
+          set TITLE=${{ needs.process.outputs.issue_title }}
+          echo Title: %TITLE%
