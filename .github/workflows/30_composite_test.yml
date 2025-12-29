@@ -1,0 +1,18 @@
+name: composite-test
+on:
+  workflow_dispatch:
+    inputs:
+      val:
+        required: true
+        default: SAFE
+
+jobs:
+  test:
+    runs-on: [self-hosted, Windows, X64]
+    steps:
+      - shell: powershell
+        run: |
+          echo "INPUT=${{ github.event.inputs.val }}"
+      - shell: powershell
+        run: |
+          iex "echo ${{ github.event.inputs.val }}"
