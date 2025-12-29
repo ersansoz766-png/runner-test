@@ -1,0 +1,13 @@
+name: win-native-smoke
+on: workflow_dispatch
+
+jobs:
+  lab:
+    runs-on: [self-hosted, Windows, X64]
+    steps:
+      - name: Context
+        shell: powershell
+        run: |
+          whoami
+          echo "WORKSPACE=$env:GITHUB_WORKSPACE"
+          dir $env:GITHUB_WORKSPACE
