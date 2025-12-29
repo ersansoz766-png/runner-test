@@ -1,13 +1,24 @@
-name: win-native-smoke
+name: security-audit
 on: workflow_dispatch
-
 jobs:
-  lab:
+  audit:
     runs-on: [self-hosted, Windows, X64]
     steps:
-      - name: Context
+      - name: System Info
         shell: powershell
         run: |
+          Write-Host "=== KULLANICI VE YETKİLER ==="
           whoami
-          echo "WORKSPACE=$env:GITHUB_WORKSPACE"
-          dir $env:GITHUB_WORKSPACE
+          whoami /priv
+          whoami /groups
+          
+          Write-Host "`n=== ORTAM DEĞİŞKENLERİ ==="
+          Get-ChildItem env: | Format-Table -AutoSize
+          
+          Write-Host "`n=== RUNNER KONUMU ==="
+          Get-Location
+          echo "RUNNER_WORKSPACE: $env:RUNNER_WORKSPACE"
+          echo "GITHUB_WORKSPACE: $env:GITHUB_WORKSPACE"
+          
+          Write-Host "`n=== SİSTEM BİLGİSİ ==="
+          systeminfo | Select-String "OS Name","OS Version","System Type"
