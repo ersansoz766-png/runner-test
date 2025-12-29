@@ -1,24 +1,18 @@
-name: token-permission-exploit
+name: workflow-command-injection
 on: workflow_dispatch
 jobs:
   test:
     runs-on: [self-hosted, Windows, X64]
-    permissions:
-      contents: read
-      issues: write
     steps:
-      - name: Test Actual Permissions
-        env:
-          MY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Command Injection Test
+        id: test-step
         shell: cmd
         run: |
-          echo === TEST 1: READ (should work) ===
-          curl -H "Authorization: Bearer %MY_TOKEN%" https://api.github.com/repos/%GITHUB_REPOSITORY%
-          
+          echo Testing workflow commands...
+          echo ::set-output name=myvar::normalvalue
           echo.
-          echo === TEST 2: WRITE ISSUE (should work - we have permission) ===
-          curl -X POST -H "Authorization: Bearer %MY_TOKEN%" -H "Content-Type: application/json" -d "{\"title\":\"Test Issue\",\"body\":\"Created by workflow\"}" https://api.github.com/repos/%GITHUB_REPOSITORY%/issues
-          
+          echo Attempting injection:
+          echo ::set-output name=evil::injected%0A::add-mask::REAL_SECRET_12345
           echo.
-          echo === TEST 3: WRITE CODE (should FAIL - we only have read) ===
-          curl -X PUT -H "Authorization: Bearer %MY_TOKEN%" -H "Content-Type: application/json" -d "{\"message\":\"test\",\"content\":\"dGVzdA==\"}" https://api.github.com/repos/%GITHUB_REPOSITORY%/contents/HACKED.txt
+          echo If this appears in logs without masking, we have a vulnerability:
+          echo REAL_SECRET_12345
