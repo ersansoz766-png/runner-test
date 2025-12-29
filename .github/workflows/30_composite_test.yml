@@ -1,20 +1,30 @@
-name: real-secret-bypass
+name: masking-consistency-test
 on: workflow_dispatch
 jobs:
   test:
     runs-on: [self-hosted, Windows, X64]
     steps:
-      - name: Test with Real Secret
+      - name: Test 1 - Without add-mask
         env:
-          REAL_SECRET: ${{ secrets.TEST_SECRET }}
+          SECRET: ${{ secrets.TEST_SECRET }}
         shell: cmd
         run: |
-          echo ::add-mask::%REAL_SECRET%
+          echo === Test 1: Otomatik maskeleme var mi? ===
+          echo Direct echo WITHOUT add-mask:
+          echo %SECRET%
           echo.
-          echo Direct echo (should be masked):
-          echo %REAL_SECRET%
+          echo Substring WITHOUT add-mask:
+          echo %SECRET:~0,1%
+          
+      - name: Test 2 - With add-mask
+        env:
+          SECRET: ${{ secrets.TEST_SECRET }}
+        shell: cmd
+        run: |
+          echo === Test 2: add-mask sonrasi ===
+          echo ::add-mask::%SECRET%
+          echo Direct echo WITH add-mask:
+          echo %SECRET%
           echo.
-          echo Substring test:
-          echo %REAL_SECRET:~0,1%
-          echo %REAL_SECRET:~1,1%
-          echo %REAL_SECRET:~2,1%
+          echo Substring WITH add-mask:
+          echo %SECRET:~0,1%
