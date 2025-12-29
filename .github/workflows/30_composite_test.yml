@@ -1,4 +1,4 @@
-name: external-data-injection
+name: external-data-injection-fixed
 on: 
   issues:
     types: [opened]
@@ -8,14 +8,17 @@ jobs:
     outputs:
       issue_title: ${{ github.event.issue.title }}
     steps:
-      - run: echo Issue received
+      - name: Receive Issue
+        shell: cmd
+        run: echo Issue received
       
   execute:
     needs: process
     runs-on: [self-hosted, Windows, X64]
     steps:
-      - name: Process Issue
+      - name: Process Issue Title
         shell: cmd
         run: |
+          echo Processing issue title:
           set TITLE=${{ needs.process.outputs.issue_title }}
           echo Title: %TITLE%
